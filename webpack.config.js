@@ -3,11 +3,12 @@ const webpack = require('webpack');
 
 const config = {
   entry: './src/index.js',
+  mode: 'development',
   output: {
     path: path.resolve(__dirname, 'public/js'),
     filename: 'index.main.js'
   },
-  // devtool: 'source-map',
+  devtool: 'cheap-eval-source-map',
   module: {
     rules: [
       {test: /\.(js|jsx)$/, use: 'babel-loader', exclude: /node_modules/},
@@ -30,7 +31,7 @@ const config = {
     fs: 'empty'
   },
   // plugins: [
-  //   new webpack.optimize.UglifyJsPlugin({ sourceMap: true })
+  //   new webpack.optimize.UglifyJsPlugin()
   // ],
   resolve: {
     alias: {
