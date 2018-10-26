@@ -8,7 +8,7 @@ const config = {
     path: path.resolve(__dirname, 'public/js'),
     filename: 'index.main.js'
   },
-  devtool: 'cheap-eval-source-map',
+  // devtool: 'cheap-eval-source-map',
   module: {
     rules: [
       {test: /\.(js|jsx)$/, use: 'babel-loader', exclude: /node_modules/},
