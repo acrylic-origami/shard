@@ -3,16 +3,18 @@ import MeshPoint from './MeshPoint';
 
 export default class {
 	constructor(points: Array<MeshPoint>) {
-		this.points = points.map(point => point.clone());
+		this.points = points;
 	}
 	shard(P0: Vector, P_SCREEN: Vector) { // origin: Vector /* Vector3 */, SCALE: number = 10, stroke_style: ?string = null): GeometryCollection<CanvasRenderingContext2D> {
+		const points = this.points.map(p => p.clone());
+		
 		const build_path = (idx: number): Array<Vector> => {
-			const point = this.points[idx];
+			const point = points[idx];
 			
 			if(point.adj.length > 0 && Math.random() > 1 / (point.adj.length + 1)) {
 				const target_adj_idx = Math.floor(Math.random() * point.adj.length);
 				const target_idx = point.adj[target_adj_idx];
-				const target = this.points[target_idx];
+				const target = points[target_idx];
 				
 				target.adj.splice(target.adj.indexOf(idx), 1);
 				point.adj.splice(target_adj_idx, 1);
@@ -21,18 +23,18 @@ export default class {
 			}
 			else
 				return [point.coords];
-		}
+		} // points dependency
 		
 		const paths = [];
 		const P0_HAT = P0.toUnitVector();
 		const negative_room = P0.modulus() - P0.subtract(P_SCREEN).modulus(); // user distance to screen vs. user distance to origin, in real world units (avoid scaling with change of focal distance)
 		const rand_range = [-Math.atan(negative_room), Math.PI];
-		for(let i = 0; i < this.points.length; i++) {
-			const point = this.points[i];
+		for(let i = 0; i < points.length; i++) {
+			const point = points[i];
 			while(point.adj.length > 0) {
 				const target_adj_idx = Math.floor(Math.random() * point.adj.length);
 				const target_idx = point.adj[target_adj_idx];
-				const target = this.points[target_idx];
+				const target = points[target_idx];
 				
 				target.adj.splice(target.adj.indexOf(i), 1);
 				point.adj.splice(target_adj_idx, 1);
