@@ -62,7 +62,7 @@ export const logo = new Mesh([
 	[[-6.55625,9.64375],[12]],
 	[[-6.55625,15.04375],[3]],
 	[[-1.85625,-6.85625],[11]]
-].map(([coord, adjs]) => new MeshPoint($V(coord).x(0.05), adjs)));
+].map(([coord, adjs]) => new MeshPoint($V(coord).x(-1), adjs)));
 
 export const bvrd = new Mesh([
 	[[-45.58913043,-172.7456522],[50,66,10]],
@@ -157,4 +157,4 @@ export const bvrd = new Mesh([
 	[[-5.889130435,-193.6456522],[26,64]],
 	[[0.110869565,-179.6456522],[64]],
 	[[110.2108696,3.354347826],[39,6]]
-].map(([coord, adjs]) => new MeshPoint($V(coord).x(0.005), adjs)));
+].map(([coord, adjs]) => new MeshPoint($V(coord).x(0.08), adjs)));

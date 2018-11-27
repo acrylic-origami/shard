@@ -4,53 +4,58 @@ import Q from 'q';
 import {DEFAULT_STROKE_STYLE} from './Geometry.js';
 import {Vector} from 'sylvester';
 
-const P_SCREEN = $V([0, 0, 4]);
-const P0 = $V([0, 0, 100]);
+const P_SCREEN = $V([0, 0, 5]);
+const P0 = $V([0, 0, 500]);
 const d_0_SCREEN = P_SCREEN.subtract(P0);
 
 window.addEventListener('load', e => {
 	for(const canvas of document.getElementsByClassName('hero_canvas')) {
 		((canvas) => {
-			const paths = (() => {
-				function bounding_cube(P) {
-					const min = [...Array(P[0].dimensions().cols)].map(_ => Infinity),
-					      max = [...Array(P[0].dimensions().cols)].map(_ => -Infinity);
-					for(const p of P)	{
-						for(let i = 0; i < p.dimensions().cols; i++) {
-							min[i] = Math.min(p.e(i + 1), min[i]);
-							max[i] = Math.max(p.e(i + 1), max[i]);
-						}
-					}
-					return [$V(min), $V(max)];
-				}
+			const paths = bvrd.shard(P0, P_SCREEN);
+				// .concat([
+				// 	[Vector.i, Vector.i.x(-1)],
+				// 	[Vector.j, Vector.j.x(-1)],
+				// 	[Vector.k, Vector.k.x(-1)]
+				// ].map(l => l.map(k => k.x(5).add(Vector.j.x(60)))));
+			// const paths = (() => {
+			// 	function bounding_cube(P) {
+			// 		const min = [...Array(P[0].dimensions().cols)].map(_ => Infinity),
+			// 		      max = [...Array(P[0].dimensions().cols)].map(_ => -Infinity);
+			// 		for(const p of P)	{
+			// 			for(let i = 0; i < p.dimensions().cols; i++) {
+			// 				min[i] = Math.min(p.e(i + 1), min[i]);
+			// 				max[i] = Math.max(p.e(i + 1), max[i]);
+			// 			}
+			// 		}
+			// 		return [$V(min), $V(max)];
+			// 	}
 				
-				const paths = logo.shard(P0, P_SCREEN);
-				console.log(paths);
-				const tight_bound = bounding_cube(paths.reduce((a, b) => a.concat(b)));
-				const weak_bound = (() => {
-					const ret = Array(tight_bound[0].dimensions().cols);
-					for(let i = 0; i < tight_bound[0].dimensions().cols; i++) {
-						ret[i] = Math.max(Math.abs(tight_bound[0].e(i + 1)), Math.abs(tight_bound[1].e(i + 1)));
-					}
-					return $V(ret);
-				})();
-				const weaker_bound = Math.max(weak_bound.e(1), weak_bound.e(2))
-				const xy_square = [
-					$V([-weaker_bound, -weaker_bound, 0]),
-					$V([weaker_bound, -weaker_bound, 0]),
-					$V([weaker_bound, weaker_bound, 0]),
-					$V([-weaker_bound, weaker_bound, 0]),
-					$V([-weaker_bound, -weaker_bound, 0])
-				];
-				// console.log(tight_bound.map(v => v.inspect()))
-				// debugger;
-				return paths.concat([
-					xy_square.map(v => v.add(Vector.k.x(tight_bound[0].e(3)))),
-					xy_square.map(v => v.add(Vector.k.x(tight_bound[1].e(3)))),
-				]).concat(xy_square.map(v =>
-					[v.add(Vector.k.x(tight_bound[0].e(3))), v.add(Vector.k.x(tight_bound[1].e(3)))]
-				));
-			})();
+			// 	const paths = logo.shard(P0, P_SCREEN);
+			// 	const tight_bound = bounding_cube(paths.reduce((a, b) => a.concat(b)));
+			// 	const weak_bound = (() => {
+			// 		const ret = Array(tight_bound[0].dimensions().cols);
+			// 		for(let i = 0; i < tight_bound[0].dimensions().cols; i++) {
+			// 			ret[i] = Math.max(Math.abs(tight_bound[0].e(i + 1)), Math.abs(tight_bound[1].e(i + 1)));
+			// 		}
+			// 		return $V(ret);
+			// 	})();
+			// 	const weaker_bound = Math.max(weak_bound.e(1), weak_bound.e(2))
+			// 	const xy_square = [
+			// 		$V([-weaker_bound, -weaker_bound, 0]),
+			// 		$V([weaker_bound, -weaker_bound, 0]),
+			// 		$V([weaker_bound, weaker_bound, 0]),
+			// 		$V([-weaker_bound, weaker_bound, 0]),
+			// 		$V([-weaker_bound, -weaker_bound, 0])
+			// 	];
+			// 	// console.log(tight_bound.map(v => v.inspect()))
+			// 	// debugger;
+			// 	return paths.concat([
+			// 		xy_square.map(v => v.add(Vector.k.x(tight_bound[0].e(3)))),
+			// 		xy_square.map(v => v.add(Vector.k.x(tight_bound[1].e(3)))),
+			// 	]).concat(xy_square.map(v =>
+			// 		[v.add(Vector.k.x(tight_bound[0].e(3))), v.add(Vector.k.x(tight_bound[1].e(3)))]
+			// 	));
+			// })();
 			const pixel_ratio = window.devicePixelRatio || 1;
 
 			function on_load_resize() {
@@ -73,12 +78,12 @@ window.addEventListener('load', e => {
 			// state machine for interactivity
 			let is_interactive = false;
 			let target = $V([0, 0]); // yaw, pitch
-			const ANGULAR_RANGE = $V([Math.PI / 6, Math.PI / 6])
+			const ANGULAR_RANGE = $V([-Math.PI / 2, -Math.PI / 2])
 			
 			window.addEventListener('mouseenter', e => {
 				is_interactive = true;
 			});
-			window.addEventListener('mouseleave', (e) => {
+			document.addEventListener('mouseout', (e) => {
 				is_interactive = false;
 				target = $V([0, 0]);
 			});
@@ -94,13 +99,13 @@ window.addEventListener('load', e => {
 			
 			// set the line style
 			
-			const GAIN = 0.14;
-			const PX_PER_PT = 50 * pixel_ratio;
+			const GAIN = 0.11;
 			const DELTA_THRESH = 0.0001; // steady-state
 			
 			({
 		 		current: $V([ (Math.random() - 0.5) * ANGULAR_RANGE.e(1), (Math.random() - 0.5) * ANGULAR_RANGE.e(2) ]),
 		 		draw: function(t) {
+					const PX_PER_PT = 10*pixel_ratio * window.innerWidth / 1280;
 		 			window.requestAnimationFrame(this.draw.bind(this));
 					
 		 			// logo sharding

@@ -28,7 +28,8 @@ export default class {
 		const paths = [];
 		const P0_HAT = P0.toUnitVector();
 		const negative_room = P0.modulus() - P0.subtract(P_SCREEN).modulus(); // user distance to screen vs. user distance to origin, in real world units (avoid scaling with change of focal distance)
-		const rand_range = [-Math.atan(negative_room), Math.PI];
+		const rand_range = [-Math.atan(negative_room / 100), Math.PI];
+		// console.log(rand_range[0])
 		for(let i = 0; i < points.length; i++) {
 			const point = points[i];
 			while(point.adj.length > 0) {
@@ -42,15 +43,15 @@ export default class {
 				const original_points = build_path(i).reverse().concat(build_path(target_idx));
 				
 				// Cauchy-distributed
-				const path_offset_factor = Math.tan(Math.random() * (rand_range[1] - rand_range[0]) + rand_range[0]);
+				const path_offset_factor = -Math.tan(Math.random() * (rand_range[1] - rand_range[0]) + rand_range[0]) * 100;
 				// console.log(path_offset_factor)
 				
 				paths.push(original_points.map(point => {
 					const P3 = $V([point.e(1), point.e(2), 0]); // point.coerce(3);
-					const point_offset_factor = (Math.random() * 0.1 - 0.05) * (path_offset_factor + negative_room);
+					const point_offset_factor = ((Math.random() - 0.5) * 2) * negative_room / 10;
 					const d_P3_P0_hat = P3.subtract(P0).toUnitVector();
 					return P3.add(d_P3_P0_hat.x(
-						(point_offset_factor + path_offset_factor) /
+						(path_offset_factor + point_offset_factor) /
 						Math.abs(P0_HAT.dot(d_P3_P0_hat))
 					));
 				}));
